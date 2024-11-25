@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-Controlled Slide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .slide {
+            display: none;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 2rem;
+        }
+        .active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div id="slide1" class="slide active">Slide 1</div>
+    <div id="slide2" class="slide">Slide 2</div>
+    <div id="slide3" class="slide">Slide 3</div>
+    <p id="status">Listening...</p>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) slide.classList.add('active');
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // Web Speech API
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'id-ID'; // Bahasa Indonesia
+        recognition.interimResults = false;
+        recognition.continuous = true;
+
+        recognition.onresult = (event) => {
+            const speech = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+            console.log('Recognized:', speech);
+
+            if (speech.includes("oke next")) {
+                nextSlide();
+            } else if (speech.includes("kembali")) {
+                previousSlide();
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Error:', event.error);
+            document.getElementById('status').innerText = 'Error: ' + event.error;
+        };
+
+        recognition.onstart = () => {
+            document.getElementById('status').innerText = 'Listening...';
+        };
+
+        recognition.onend = () => {
+            document.getElementById('status').innerText = 'Stopped listening.';
+        };
+
+        // Start speech recognition
+        recognition.start();
+    </script>
+</body>
+</html>
